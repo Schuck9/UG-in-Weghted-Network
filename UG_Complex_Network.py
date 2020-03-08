@@ -300,10 +300,25 @@ class UG_Complex_Network():
 
         return chosen_individual,reproduce_individual
 
+    def evolution_fairness(self,G):
+        '''
+        update process in Evolution of fairness in the one-shot anonymous UG
+        '''
+        individual_list = list(G.nodes())
+        pay_off = self.get_all_values(G,'payoff')
+        pay_off = np.array(pay_off)
+        effective_payoff = np.exp(self.intensity_selection*pay_off)
+        effective_payoff = effective_payoff*1.0/np.sum(effective_payoff) 
+        reproduce_individual = np.random.choice(a = individual_list ,size = 1,p = effective_payoff)[0]
+        chosen_individual = np.random.choice(a = individual_list,size = 1)[0]
+        G.nodes[chosen_individual]['p'] = G.nodes[reproduce_individual]['p']
+        G.nodes[chosen_individual]['q'] = G.nodes[reproduce_individual]['q'] 
+        return chosen_individual,reproduce_individual
+
     def mutation(self,G,chosen_individual,reproduce_individual):
-        if np.random.rand(1) <= self.mutate_rate*10:
+        if np.random.rand(1) <= self.mutate_rate:
             G.nodes[chosen_individual]['p'],G.nodes[chosen_individual]['q'] = np.random.rand(2)
-            print("MC")
+            # print("MC")
         # else:
         #     G.nodes[chosen_individual]['p'] = G.nodes[reproduce_individual]['p']
         #     G.nodes[chosen_individual]['q'] = G.nodes[reproduce_individual]['q']   
@@ -316,6 +331,8 @@ class UG_Complex_Network():
             chosen_individual,reproduce_individual = self.natural_selection(G)
         elif self.update_rule == "SP":
             chosen_individual,reproduce_individual = self.social_penalty(G)
+        elif self.update_rule == "EF":
+            chosen_individual,reproduce_individual = self.evolution_fairness(G)
         elif self.update_rule == "DB":
             chosen_individual,reproduce_individual = self.death_birth_updating(G)
         elif self.update_rule == "BD":
@@ -423,10 +440,10 @@ if __name__ == '__main__':
 
     node_num = 100
     network_type = "RG" # [SF, ER, RG]
-    update_rule ='PC'   # [NS, SP, DB, BD, PC, IU]
+    update_rule ='EF'   # [NS, SP, EF,DB, BD, PC, IU]
     player_type = "C" # [A=(p=q,q), B=(p,1-p), C=(p,q)]
     avg_degree = 4
-    intensity_selection = 0.01
+    intensity_selection = 0.1
     mutate_rate = 0.001
     
     avg_strategy_list = []
