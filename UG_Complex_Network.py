@@ -19,7 +19,7 @@ class UG_Complex_Network():
         self.network_type = network_type # "SF" or "ER"
         self.player_type = player_type # "A" or "B" "C"
         self.update_rule = update_rule # "SP" or "SP"
-        self.max_weight = 0.4
+        self.max_weight = 0.25
         self.intensity_selection = intensity_selection
         self.mutate_rate = mutate_rate
         self.avg_strategy = (0,0)
@@ -40,7 +40,7 @@ class UG_Complex_Network():
         building network
         '''
         print("Building network!")
-
+        G = None
         if network_type == None:
             network_type = self.network_type
         
@@ -162,8 +162,9 @@ class UG_Complex_Network():
                 # proposer = n ,responder = nbr
                 offer = G.nodes[n]['p']
                 demand = G.nodes[nbr]['q']
+                weight = G.edges[n, nbr]['weight'] 
                 if offer > demand:
-                    G.nodes[n]['payoff'] += 1-offer
+                    G.nodes[n]['payoff'] += (1-offer)*weight
                     # G.nodes[nbr]['payoff'] += offer
 
                 # proposer = nbr ,responder = n
@@ -171,10 +172,10 @@ class UG_Complex_Network():
                 demand = G.nodes[n]['q']
                 if offer > demand:
                     # G.node[nbr]['payoff'] += 1-offer
-                    G.nodes[n]['payoff'] += offer
+                    G.nodes[n]['payoff'] += offer*weight
             num_nbrs = G.degree(n)
-            if num_nbrs != 0:
-                G.nodes[n]['payoff'] /= G.degree(n)
+            # if num_nbrs != 0:
+            #     G.nodes[n]['payoff'] /= G.degree(n)
         
     def natural_selection(self,G):
         '''
@@ -435,7 +436,34 @@ class UG_Complex_Network():
             degree_total = degree_total + G.degree(x)
         return degree_total/self.node_num
 
-        
+
+def Game(node_num,network_type,update_rule,player_type,avg_degree,intensity_selection,mutate_rate,check_point,Epochs ,info):
+    if check_point != None:
+        UG = UG_Complex_Network(node_num,network_type,update_rule,player_type,avg_degree,intensity_selection,mutate_rate,check_point)
+        G,Start  = UG.retrain(check_point)
+    else:
+        Start = 1
+        UG = UG_Complex_Network(node_num,network_type,update_rule,player_type,avg_degree,intensity_selection,mutate_rate)
+        #bulids network structure
+        G = UG.build_network()
+        #initialize the strategy of player in network
+        UG.initialize_strategy(G)
+    #play game
+    for Epoch in range(Start,Epochs+1):
+        UG.initialize_payoff(G)
+        UG.synchronous_play(G)
+        UG.update(G)
+        UG.avg_strategy = UG.avg_strategy_calculate(G,Epoch)
+        if Epoch % 10000 == 0:
+            print("Thread info:",info)
+            print("Epoch[{}]".format(Epoch))
+            print("Average strategy: (p ,q)={}\n".format(UG.avg_strategy))
+            UG.avg_pq_list.append(UG.avg_strategy)
+            UG.save(G,Epoch)
+            # UG.viz(G)
+
+
+
 if __name__ == '__main__':
 
     node_num = 100
@@ -444,18 +472,17 @@ if __name__ == '__main__':
     player_type = "C" # [A=(p=q,q), B=(p,1-p), C=(p,q)]
     avg_degree = 4
     intensity_selection = 0.1
-    mutate_rate = 0.001
-    
-    avg_strategy_list = []
+    mutate_rate = 0.01
     Epochs = pow(10,7)
     check_point = None
     # check_point = '2020-03-08-11-52-42'
+
     if check_point != None:
         UG = UG_Complex_Network(node_num,network_type,update_rule,player_type,avg_degree,intensity_selection,mutate_rate,check_point)
         G,Start  = UG.retrain(check_point)
     else:
         Start = 1
-        UG = UG_Complex_Network(node_num,network_type,update_rule,player_type,avg_degree,intensity_selection)
+        UG = UG_Complex_Network(node_num,network_type,update_rule,player_type,avg_degree,intensity_selection,mutate_rate)
         #bulids network structure
         G = UG.build_network()
         #initialize the strategy of player in network
