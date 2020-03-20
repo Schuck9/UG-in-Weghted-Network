@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import os
+from img_concat import image_compose
 
 
 def pq_distribution(value_list):
@@ -133,7 +134,7 @@ def data_loader(data_path):
     return data_dict
 
 def weighted_graph_viz():
-    data_path ='./result/data.xlsx'
+    data_path ='./result/Result_data.xlsx'
     data_dict= data_loader(data_path)
     weight_axis = [0.25, 0.3, 0.35, 0.4, 0.55, 0.7, 0.85]
     weight_axis_str = [str(x )for x in weight_axis]
@@ -143,9 +144,11 @@ def weighted_graph_viz():
     u = [str(i) for i in u]
     w = [0.001, 0.01, 0.1, 1, 10]
     w = [str(i) for i in w]
+    index = np.array([[0,2,4],[1,3,5]])
+
     
     for k ,role in enumerate(pq):
-        for u_ in u:
+        for j,u_ in enumerate(u):
             y_list = []
             for w_ in w:
                 ls = []
@@ -156,7 +159,7 @@ def weighted_graph_viz():
             # print("y_axis done!")
 
             info_str = role+"_"+u_
-            save_path = './result/{}.jpg'.format(info_str)
+            save_path = './result/Fig/{}_{}.jpg'.format(index[k][j],info_str)
             plt.figure()
             
             # plt.rcParams['font.sans-serif']=['SimHei']
@@ -173,7 +176,7 @@ def weighted_graph_viz():
             plt.legend(loc = 'upper right') # 显示图例
             plt.savefig(save_path)
             print("Figure has been saved to: ",save_path)
-            plt.show()
+            # plt.show()
 
 if __name__ == '__main__':
 
@@ -182,3 +185,4 @@ if __name__ == '__main__':
     # pq_distribution_viz(RecordName,time_option)
     # avg_pq_viz()
     weighted_graph_viz()
+    image_compose("./result/Fig/")

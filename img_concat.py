@@ -8,24 +8,26 @@ Ultimatum Game in complex network Visualization
 import PIL.Image as Image
 import os
 
-IMAGES_PATH = './result/Figure/'  # 图片集地址
-IMAGES_FORMAT = ['.jpg', '.JPG']  # 图片格式
-IMAGE_SIZE = (640,480) # 每张小图片的大小
-IMAGE_ROW = 3  # 图片间隔，也就是合并成一张图后，一共有几行
-IMAGE_COLUMN = 2  # 图片间隔，也就是合并成一张图后，一共有几列
-IMAGE_SAVE_PATH = './result/Figure/Sum.jpg'  # 图片转换后的地址
 
-# 获取图片集地址下的所有图片名称
-image_names = [name for name in os.listdir(IMAGES_PATH) for item in IMAGES_FORMAT if
-               os.path.splitext(name)[1] == item]
-image_names.sort()
-# 简单的对于参数的设定和实际图片集的大小进行数量判断
-if len(image_names) != IMAGE_ROW * IMAGE_COLUMN:
-    raise ValueError("合成图片的参数和要求的数量不能匹配！")
 
 
 # 定义图像拼接函数
-def image_compose():
+def image_compose(IMAGES_PATH):
+    
+    IMAGE_SAVE_PATH =os.path.join(IMAGES_PATH, 'Concat_Img.jpg' ) # 图片转换后的地址
+    IMAGES_FORMAT = ['.jpg', '.JPG']  # 图片格式
+    IMAGE_SIZE = (640,480) # 每张小图片的大小
+    IMAGE_ROW = 3  # 图片间隔，也就是合并成一张图后，一共有几行
+    IMAGE_COLUMN = 2  # 图片间隔，也就是合并成一张图后，一共有几列
+
+
+    # 获取图片集地址下的所有图片名称
+    image_names = [name for name in os.listdir(IMAGES_PATH) for item in IMAGES_FORMAT if
+                os.path.splitext(name)[1] == item]
+    image_names.sort()
+    # 简单的对于参数的设定和实际图片集的大小进行数量判断
+    # if len(image_names) != IMAGE_ROW * IMAGE_COLUMN:
+    #     raise ValueError("合成图片的参数和要求的数量不能匹配！")
     to_image = Image.new('RGB', (IMAGE_COLUMN * IMAGE_SIZE[0], IMAGE_ROW * IMAGE_SIZE[1]))  # 创建一个新图
     # 循环遍历，把每张图片按顺序粘贴到对应位置上
     for y in range(1, IMAGE_ROW + 1):
@@ -33,7 +35,13 @@ def image_compose():
             from_image = Image.open(IMAGES_PATH + image_names[IMAGE_COLUMN * (y - 1) + x - 1]).resize(
                 (IMAGE_SIZE[0], IMAGE_SIZE[1]), Image.ANTIALIAS)
             to_image.paste(from_image, ((x - 1) * IMAGE_SIZE[0], (y - 1) * IMAGE_SIZE[1]))
-    return to_image.save(IMAGE_SAVE_PATH)  # 保存新图
+    
+    to_image.save(IMAGE_SAVE_PATH)  # 保存新图
+    print("Conpose done!")
 
 
-image_compose()  # 调用函数
+
+
+if __name__ == '__main__':
+    IMAGES_PATH = './result/Fig/'  # 图片集地址
+    image_compose()  # 调用函数
