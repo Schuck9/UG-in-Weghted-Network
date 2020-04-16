@@ -19,7 +19,7 @@ class UG_Complex_Network():
         self.network_type = network_type # "SF" or "ER"
         self.player_type = player_type # "A" or "B" "C"
         self.update_rule = update_rule # "SP" or "SP"
-        self.max_weight = 0.25
+        self.max_weight = 0.85
         self.intensity_selection = intensity_selection
         self.mutate_rate = mutate_rate
         self.avg_strategy = (0,0)
@@ -57,7 +57,7 @@ class UG_Complex_Network():
                             break
                     G.add_edge(n, nbr)
         elif network_type == "RG":
-            G = nx.random_graphs.random_regular_graph(self.avg_degree, self.node_num)
+            G = nx.random_graphs.random_regular_graph(self.avg_degree, self.node_num,1)
             G = self.network_weights_asign(G)
 
                  
@@ -471,11 +471,11 @@ if __name__ == '__main__':
     update_rule ='EF'   # [NS, SP, EF,DB, BD, PC, IU]
     player_type = "C" # [A=(p=q,q), B=(p,1-p), C=(p,q)]
     avg_degree = 4
-    intensity_selection = 0.1
-    mutate_rate = 0.01
-    Epochs = pow(10,7)
+    intensity_selection = 1
+    mutate_rate = 0.001
+    Epochs = pow(10,8)
     check_point = None
-    # check_point = '2020-03-08-11-52-42'
+    # check_point = '2020-03-10-09-45-37'
 
     if check_point != None:
         UG = UG_Complex_Network(node_num,network_type,update_rule,player_type,avg_degree,intensity_selection,mutate_rate,check_point)
@@ -493,7 +493,7 @@ if __name__ == '__main__':
         UG.synchronous_play(G)
         UG.update(G)
         UG.avg_strategy = UG.avg_strategy_calculate(G,Epoch)
-        if Epoch % 10000 == 0:
+        if Epoch % 100 == 0:
             print("Epoch[{}]".format(Epoch))
             print("Average strategy: (p ,q)={}\n".format(UG.avg_strategy))
             UG.avg_pq_list.append(UG.avg_strategy)
